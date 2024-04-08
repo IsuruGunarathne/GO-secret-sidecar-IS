@@ -27,7 +27,7 @@ data:
     base_path = "https://$ref{server.hostname}:${carbon.management.port}"
     force_local_cache = true
 
-    [super_admin] 
+    [super_admin]
     username = "admin"
     password = "admin"
     create_admin_account = true
@@ -73,6 +73,7 @@ data:
     [keystore.primary]
     file_name = "wso2carbon.jks"
     password = "wso2carbon"
+    type="JKS"
 
     [truststore]
     file_name="client-truststore.jks"
@@ -101,12 +102,5 @@ data:
     supports_credentials = true
     max_age = 3600
     tag_requests = false
-
-    [[event_listener]]
-    id = "custom-user-operation-event-listener"
-    type = "org.wso2.carbon.user.core.listener.UserOperationEventListener"
-    name = "org.wso2.custom.user.operation.event.listener.CustomUserOperationEventListener"
-    order = 9000
-    enable = true
 
     # from configmap
