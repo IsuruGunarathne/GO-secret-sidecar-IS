@@ -15,7 +15,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: identity-server-conf-read-write
+  name: identity-server-conf
   namespace: wso2is
 
 data:
@@ -46,7 +46,7 @@ data:
     url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
     username = "wso2carbon"
     password = "wso2carbon"
-    
+
     [clustering]
     membership_scheme = "kubernetes"
     domain = "wso2.carbon.domain"
@@ -69,7 +69,7 @@ data:
 
     [identity_mgt.user_self_registration]
     callback_url = "${carbon.protocol}:\\/\\/${carbon.host}\\/.*"
-    
+
     [keystore.primary]
     file_name = "wso2carbon.jks"
     password = "wso2carbon"
@@ -108,6 +108,5 @@ data:
     name = "org.wso2.custom.user.operation.event.listener.CustomUserOperationEventListener"
     order = 9000
     enable = true
-    
+
     # from configmap
-    
