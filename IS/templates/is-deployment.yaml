@@ -70,4 +70,8 @@ spec:
         - name: identity-server-conf-read-write
           configMap:
             name: identity-server-conf-read-write
+        - name: vol
+          emptyDir:
+            medium: Memory
+
       serviceAccountName: is-service-account
