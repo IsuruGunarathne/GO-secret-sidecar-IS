@@ -1,0 +1,111 @@
+# Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: identity-server-conf-read-write
+  namespace: wso2is
+
+data:
+  deployment.toml: |-
+    # Deployment config for Identity Server deployment
+    [server]
+    hostname = "wso2is.centralus.cloudapp.azure.com"
+    node_ip = "$env{NODE_IP}"
+    base_path = "https://$ref{server.hostname}:${carbon.management.port}"
+    force_local_cache = true
+
+    [super_admin] 
+    username = "admin"
+    password="$secret{admin_password}"
+    create_admin_account = true
+
+    [user_store]
+    type = "database_unique_id"
+
+    [database.identity_db]
+    type = "h2"
+    url = "jdbc:h2:./repository/database/WSO2IDENTITY_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+    username = "wso2carbon"
+    password = "wso2carbon"
+
+    [database.shared_db]
+    type = "h2"
+    url = "jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000"
+    username = "wso2carbon"
+    password = "wso2carbon"
+
+    [clustering]
+    membership_scheme = "kubernetes"
+    domain = "wso2.carbon.domain"
+
+    [clustering.properties]
+    membershipSchemeClassName = "org.wso2.carbon.membership.scheme.kubernetes.KubernetesMembershipScheme"
+    KUBERNETES_NAMESPACE = "wso2is"
+    KUBERNETES_SERVICES = "identity-service"
+    KUBERNETES_MASTER_SKIP_SSL_VERIFICATION = true
+    USE_DNS = false
+
+    [hazelcast]
+    "hazelcast.shutdownhook.enabled" = "false"
+    "hazelcast.logging.type"= "log4j2"
+
+    [transport.http.properties]
+    proxyPort = 80
+    [transport.https.properties]
+    proxyPort = 443
+
+    [identity_mgt.user_self_registration]
+    callback_url = "${carbon.protocol}:\\/\\/${carbon.host}\\/.*"
+
+    [keystore.primary]
+    file_name = "wso2carbon.jks"
+    password = "wso2carbon"
+
+    [truststore]
+    file_name="client-truststore.jks"
+    password = "$secret{keystore_password}" 
+    type="JKS"
+
+    [account_recovery.endpoint.auth]
+    hash= "66cd9688a2ae068244ea01e70f0e230f5623b7fa4cdecb65070a09ec06452262"
+
+    [identity.auth_framework.endpoint]
+    app_password= "dashboard"
+
+    [cors]
+    allow_generic_http_requests = true
+    allow_any_origin = true
+    allow_subdomains = true
+    supported_methods = [
+    "GET",
+    "POST",
+    "HEAD",
+    "OPTIONS"
+    ]
+    support_any_header = true
+    supported_headers = []
+    exposed_headers = []
+    supports_credentials = true
+    max_age = 3600
+    tag_requests = false
+
+    [secrets]
+    admin_password    = "i0y3KIZUr3dYjOH+O5OHJ3xE6/Hba2YiepSXYsmxZ0F9avV4pMxoyLB1Cwa8htoQXuXNvDMhkfLon/F93D4BAOFGq+WMX0SsxlqmBxW/FNB96Fv5eF0k13jaN6onFkhZGWaLA5lb4LX0tcN3I5/Z2Rsw+bxvRIV24OINUKk5331vsziW3mkJ+ZKVTXLEKa8RNpIjVa2jr+t6nKrauxsm6ScFp6avx/tIP9kqWdNBXW1R5L+Em0hjt/iohVfoLSWdbnGB6ARyQlLDqQJnmS0pQTRc/FEKMagoCIeVBX1zO3fXAwieoyLM9zR8OYZ8pl1nhUoAlamBu0I+yObu+g3Otg=="
+    keystore_password    = "D5IIO8M49r43nnz8l3bEyH4N93GnFhDXAf7yuY6tT1C9jfOdLtIz42cSh7DDHsvOeVL15eI37DEFMtF7K6q3L2FJS+w/a7vz02j5nhqrnjinddl/ezR+9lK/10kIS5cX4CQ0LGIkIT0xErSbOGSxqOWOuvJqISZ7SIcJiXvmeaezffM3BbssadghkCxdQlVGMPWGfWaTzi/nZmRmuRDzBVzPvSF28EzOuydWGjjoVPFrKi3OzxpELrCRzDnwkyutGKQ/iXUQ5Gy/rrqbKSOz21VOssNACHH9AIA5aPnYDy8GwVQCoOoZcTN2pFeByDe0LZJdM5oPOGJIN7+IvX1tjg=="
+    key_password    = "RUF6bJbfE50RLyT09Ume1pmyzlQ5WW5AadXv98TeKzezcUa/u11wYw4r1lIN5lPre0D9TrguwR816gkzXEzPY+OG/CqFK2P4ak909TeGidd7yBIIOCVPSvthP7QQzqdlhVrwS3dCdnrkwG53VdRdSGm3N8fTsw+UFR6d446qENWwNyq7dRhlMsmbaOSDLu83w2et6+KQL/YIUY0GKbgrOHuY8mkuUluQUws0aEeoeLYuIAobb9oO/MjfOsvzPBPpEsT5voo1ggQK6qqzhXw8prnlvyPYcIts2g6Bp3LGee00atrPNSs7zdgsv/t4Ip2C1inP650t4hmihnlQSp+9Iw=="
+    truststrore_password    = "EJG2qJnBTW8+BDB9gpY31JAQPsK8dRhaBXdO0ATdmZRGWRSM/SR9tvUL7YKDg2Wl/+YDVrtGHCftJdZ5Rygt5Nzi8X7IaFCPWG45KgrSmxdfqdi8OzaeEGuHISohX//aPrCqE/9rbr4N+zx/gdLUZCn73U/opJwu4P0fxS2Ake66gLsyx+ZQqPN/ZGEVmZhlCEfQSsLQpQm/JNSvDLpIi/xDVg+i5NNhUzkhHyA9ISTYZN5CHLDvxen3jvlwS1x4pyVelAJEXeDDReHS/9X0RJbpfKICUXxMLnbSGmaLqEr6FMRK6tZOL6IFyKN81edaXbVPL51jnMEDeDts/qrXNw=="
+    "log4j.appender.LOGEVENT.password"    = "CcvKZ3C4NrEO/fQHUKV/sXGFRhZYnq7y1andDhavmnQLxGdfXUNJ+lF6qjaisOBoh4ObGOzgxHhHIlHFJETfHlXGTNQYmzV9zsK+6Gxpvf9BxZd5q8DEECws9nueTUmmJpt4y1eTUlslEVbEqO2jFI9dpSrXUMjbw0+05sElUtlHHOpgADtMH6/LLSB8E1BAUkA8INMQ5yZ1GaEi+ALHTCmDw1CfGf/sNqkkNZVGMxabAk5xuEuInLOqkahBZyMkdjBj/lKcOsIGahD1epY6P73tboZOw+kSqFIBRIW/2SG5MEieS3BEy3Z3KoaJ3d0JNH86Lott5aM46VjNYXsQrA=="
+    # from configmap

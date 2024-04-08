@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: { { .Values.depName } }
+  namespace: wso2is
+  labels:
+    deployment: wso2is # Labels for the deployment itself
+spec:
+  replicas: { { .Values.replicas } }
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      deployment: wso2is # Selector labels to match labels in the pod template
+  template:
+    metadata:
+      labels:
+        deployment: wso2is # Labels applied to pods created by this template
+    spec:
+      containers:
+        - name: { { .Values.appName } }
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /carbon/admin/login.jsp
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds:
+              {
+                {
+                  .Values.wso2.deployment.wso2is.livenessProbe.initialDelaySeconds,
+                },
+              }
+            periodSeconds:
+              { { .Values.wso2.deployment.wso2is.livenessProbe.periodSeconds } }
+          readinessProbe:
+            httpGet:
+              path: /api/health-check/v1.0/health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds:
+              {
+                {
+                  .Values.wso2.deployment.wso2is.readinessProbe.initialDelaySeconds,
+                },
+              }
+            periodSeconds:
+              {
+                { .Values.wso2.deployment.wso2is.readinessProbe.periodSeconds },
+              }
+          ports:
+            - containerPort: 9443
+            - containerPort: 4000
+            - containerPort: 9763
+            - containerPort: 3306
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          volumeMounts:
+            - name: identity-server-conf-read-write
+              mountPath: /home/wso2carbon/wso2is-7.0.0/repository/conf/deployment.toml
+              subPath: deployment.toml
+            - name: vol
+              mountPath: /home/wso2carbon/wso2is-7.0.0/
+
+      initContainers:
+        - name: azure-secrets-manager
+          image: acrasgardeomainrnd001.azurecr.io/secret-sidecar:central
+          env:
+            - name: AZURE_VAULT_NAME
+              value: "secretsidecar"
+            - name: AZURE_SECRET_NAME
+              value: "mysecret"
+            - name: AZURE_CLIENT_ID
+              value: "<ClientID>"
+          volumeMounts:
+            - name: vol
+              mountPath: /tmp
+
+      volumes:
+        - name: identity-server-conf-read-write
+          configMap:
+            name: identity-server-conf-read-write
+      serviceAccountName: is-service-account
